@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+       <meta charset="utf-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">
+       <title>XSS反馈</title>
+       <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.js"></script>
+       <link rel="stylesheet" type="text/css"href="http://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.css">
+</head>
+<body>
+<script>
+       $.ajax({
+              url: '/xss.log',
+              type: 'get',
+              dataType: 'text',
+       })
+       .done(function(data) {
+              var host = "";
+              var xss = "";
+              var url = "";
+              var htmlText = '<div class="panel panel-default"><div>网站存在XSS漏洞结果</div><table><thead><tr><th>序列</th><th>网站域名</th><th>存在漏洞参数</th><th>完整的原URL</th></tr></thead><tbody>';
+              data = data.split("\n");
+              if(data[data.length-1] == ""){
+                     data.pop();
+              }
+              for(var i = 0;i < data.length;i++){
+                     data[i] = data[i].substring(15);
+                     data[i] = data[i].substring(0,data[i].length-11);
+              }
+              for(i = 0;i<data.length;i++){
+                     data[i] = data[i].split("&$");
+                     host += data[i][0].split("=$")[1] + " ";
+                     xss += data[i][1].split("=$")[1] + " ";
+                     url += data[i][2].split("=$")[1] + " ";
+              }
+              host = host.split(" ");
+              host.pop();
+              xss = xss.split(" ");
+              xss.pop();
+              url = url.split(" ");
+              url.pop();
+              for(i = 0;i < data.length;i++){
+                     htmlText += "<tr><td>"+ (i+1) +"</td><td>" + host[i] + "</td><td>" + xss[i] + "</td><td>" + url[i] + "</td></tr>";
+              }
+              htmlText += "</tbody></table></div></div>";
+              $("body").append(htmlText);
+       })
+</script>
+</body>
+</html>
